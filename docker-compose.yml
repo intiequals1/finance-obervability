@@ -18,11 +18,12 @@ services:
       retries: 10
 
   etl:
-    build: ./etl
+    build: ./python
     container_name: finance-etl
     env_file: .env
     environment:
-      DATABASE_URL: postgresql://finance:finance@postgres:5432/finance
+      # Reads credentials from .env — no hardcoded values here
+      DATABASE_URL: postgresql://${POSTGRES_USER:-finance}:${POSTGRES_PASSWORD:-finance}@postgres:5432/${POSTGRES_DB:-finance}
     depends_on:
       postgres:
         condition: service_healthy
@@ -46,8 +47,8 @@ services:
     image: grafana/grafana:latest
     container_name: finance-grafana
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
     volumes:
       - ./provisioning:/etc/grafana/provisioning:ro
       - ./dashboards:/var/lib/grafana/dashboards:ro
